@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SUPER BIKE FUTURE HUD</title>
+
+<style>
+body{
+    margin:0;
+    background:#000;
+    overflow:hidden;
+    font-family:Arial;
+    color:#00BFFF;
+}
+
+/* HUD LAYER */
+.hud{
+    position:absolute;
+    width:100%;
+    height:100%;
+}
+
+/* CENTER SPEED */
+.speed{
+    position:absolute;
+    top:40%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:110px;
+    color:white;
+    text-shadow:0 0 25px #00BFFF;
+}
+
+/* CLOCK */
+.clock{
+    position:absolute;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:18px;
+}
+
+/* GEAR */
+.gear{
+    position:absolute;
+    top:55%;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:28px;
+}
+
+/* SIDE INFO */
+.side{
+    position:absolute;
+    left:20px;
+    top:40%;
+    font-size:14px;
+    color:#aaa;
+    line-height:25px;
+}
+
+/* WARNING */
+.warn{
+    position:absolute;
+    top:60px;
+    left:50%;
+    transform:translateX(-50%);
+    color:red;
+    font-size:20px;
+    font-weight:bold;
+}
+
+/* MAP */
+.map{
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    width:200px;
+    height:120px;
+    border:2px solid #00BFFF;
+}
+
+/* BUTTON */
+button{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    padding:8px;
+    background:#111;
+    color:#00BFFF;
+    border:1px solid #00BFFF;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="hud">
+
+<div id="clock" class="clock">:0.0.0</div>
+
+<div id="warn" class="warn"></div>
+
+<div id="speed" class="speed">0</div>
+
+<div id="gear" class="gear">GEAR N</div>
+
+<div class="side">
+<div id="rpm">RPM: 0</div>
+<div id="temp">TEMP: 70°C</div>
+<div id="fuel">FUEL: 100%</div>
+<div id="dir">DIR: N</div>
+</div>
+
+<iframe class="map"
+src="https://maps.google.com/maps?q=bhopal&output=embed"></iframe>
+
+<button onclick="voice()">🎤 AI VOICE</button>
+
+</div>
+
+<script>
+
+/* CLOCK */
+setInterval(()=>{
+document.getElementById("clock").innerText=
+new Date().toLocaleTimeString();
+},1000);
+
+/* VOICE AI */
+function voice(){
+let rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+rec.lang="en-US";
+
+rec.onresult=function(e){
+let cmd=e.results[0][0].transcript.toLowerCase();
+
+if(cmd.includes("speed")){
+alert("Speed is 85 KM/H");
+}
+if(cmd.includes("navigation")){
+window.open("https://maps.google.com");
+}
+}
+
+rec.start();
+}
+
+/* SYSTEM */
+let fuel=100;
+
+/* GPS HUD */
+function start(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.watchPosition((pos)=>{
+
+let speed=pos.coords.speed;
+if(speed==null) speed=Math.random()*30;
+
+let kmh=Math.round(speed*3.6);
+
+/* SPEED */
+document.getElementById("speed").innerText=kmh;
+
+/* GEAR */
+let gear="N";
+if(kmh>10)gear="1";
+if(kmh>30)gear="2";
+if(kmh>40)gear="3";
+if(kmh>45)gear="4";
+if(kmh>55)gear="5";
+document.getElementById("gear").innerText="GEAR "+gear;
+
+/* RPM */
+let rpm=kmh*150;
+document.getElementById("rpm").innerText="RPM: "+rpm;
+
+/* TEMP */
+let temp=70+kmh/3;
+document.getElementById("temp").innerText="TEMP: "+temp.toFixed(0)+"°C";
+
+/* FUEL */
+fuel-=0.02;
+if(fuel<0)fuel=0;
+document.getElementById("fuel").innerText="FUEL: "+fuel.toFixed(0)+"%";
+
+/* COMPASS */
+let dirs=["N","NE","E","SE","S","SW","W","NW"];
+let d=dirs[Math.floor(Math.random()*8)];
+document.getElementById("dir").innerText="DIR: "+d;
+
+/* WARNING */
+let warn="";
+if(kmh>120) warn="⚠ OVERSPEED";
+if(temp>95) warn="⚠ ENGINE HOT";
+if(fuel<10) warn="⚠ LOW FUEL";
+
+document.getElementById("warn").innerText=warn;
+
+});
+
+}
+
+}
+
+start();
+
+</script>
+
+</body>
+</html>
